@@ -1,0 +1,13 @@
+#app{
+	color: whitesmoke;
+}
+#div_questions{
+	overflow: auto;
+	height: 500px;
+	background-color: cadetblue;
+}
+#div_debug{
+	background-color: dimgray;
+	height: 300px;
+	overflow: auto;
+}

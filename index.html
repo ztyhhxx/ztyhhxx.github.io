@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<script type="text/javascript" src="js/vue.js" charset="utf-8"></script>
+		<script type="text/javascript" src="js/data.js" charset="utf-8"></script>
+		<script type="text/javascript" src="js/FileSaver.js" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="./css/style.css" />
+	</head>
+	<body>
+		<div id="app">
+			<div id="div_questions">
+				基本信息：<br>
+				问卷名：<input style="width: 300;" v-model="questions.basic.name" /> <br>
+				创建者：<input style="width: 50px;" v-model="questions.basic.author" /><br>
+				创建时间：{{questions.basic.date}}<br><br>
+				<div v-for="(item,index) in questions.contents">
+					<button @click="AddQue(index,item.type)">+</button>
+					<button @click="DelQue(index)">-</button>
+					第{{index}}道题，
+					<span v-if="item.type=='单选题'">
+						类型：<select v-model="item.type" @change="ChangeQue(index,item.type)">
+							<option value="" style="display: none;" disabled selected> </option>
+							<option v-for="item1 in ['单选题','多选题','简答题','说明']">{{item1}}</option>
+						</select>，
+						标题：<input v-model="item.title" />，<br>
+						<div v-for="(item1,index1) in item.options">
+							—<button @click="AddOpt(index,index1)">+</button>
+							<button @click="DelOpt(index,index1)">-</button>
+							选项{{index1}}：<input v-model="item1.option" />，
+							是否填空：<input type="checkbox" v-model="item1.blank" />，<br>
+						</div>
+						是否关联：<input type="checkbox" v-model="item.link.hasLink" @click="item.link.que='0';item.link.opt='0'"/>，
+						<span v-if="item.link.hasLink==true">
+							与第<select v-model="item.link.que">
+								<option v-for="(item1,index1) in questions.contents">{{index1}}</option>
+							</select>题的选项
+							<select v-model="item.link.opt">
+								<option v-for="(item2,index2) in questions.contents[item.link.que].options">{{item2.option}}</option>
+							</select>
+							关联。
+						</span><br>
+						<button @click="CopyThis(index)">复制</button><br>
+					</span>
+					<span v-else-if="item.type=='多选题'">
+						类型：<select v-model="item.type" @change="ChangeQue(index,item.type)">
+							<option v-for="item1 in ['单选题','多选题','简答题','说明']">{{item1}}</option>
+						</select>，
+						标题：<input v-model="item.title" />，<br>
+						<div v-for="(item1,index1) in item.options">
+							—<button @click="AddOpt(index,index1)">+</button>
+							<button @click="DelOpt(index,index1)">-</button>
+							选项{{index1}}：<input v-model="item1.option" />，
+							是否填空：<input type="checkbox" v-model="item1.blank" />，<br>
+						</div>
+						是否关联：<input type="checkbox" v-model="item.link.hasLink" @click="item.link.que='0';item.link.opt='0'"/>，
+						<span v-if="item.link.hasLink==true">
+							与第<select v-model="item.link.que">
+								<option v-for="(item1,index1) in questions.contents">{{index1}}</option>
+							</select>题的选项
+							<select v-model="item.link.opt">
+								<option v-for="(item2,index2) in questions.contents[item.link.que].options">{{item2.option}}</option>
+							</select>
+							关联。
+						</span><br>
+					</span>
+					<span v-else-if="item.type=='简答题'">
+						类型：<select v-model="item.type" @change="ChangeQue(index,item.type)">
+							<option v-for="item1 in ['单选题','多选题','简答题','说明']">{{item1}}</option>
+						</select>，
+						标题：<input v-model="item.title" />，<br>
+						是否关联：<input type="checkbox" v-model="item.link.hasLink" @click="item.link.que='0';item.link.opt='0'"/>，
+						<span v-if="item.link.hasLink==true">
+							与第<select v-model="item.link.que">
+								<option v-for="(item1,index1) in questions.contents">{{index1}}</option>
+							</select>题的选项
+							<select v-model="item.link.opt">
+								<option v-for="(item2,index2) in questions.contents[item.link.que].options">{{item2.option}}</option>
+							</select>
+							关联。
+						</span><br>
+					</span>
+					<span v-else-if="item.type=='说明'">
+						类型：<select v-model="item.type" @change="ChangeQue(index,item.type)">
+							<option v-for="item1 in ['单选题','多选题','简答题','说明']">{{item1}}</option>
+						</select>，
+						标题：<input v-model="item.title" /><br>
+						是否关联：<input type="checkbox" v-model="item.link.hasLink" @click="item.link.que='0';item.link.opt='0'"/>，
+						<span v-if="item.link.hasLink==true">
+							与第<select v-model="item.link.que">
+								<option v-for="(item1,index1) in questions.contents">{{index1}}</option>
+							</select>题的选项
+							<select v-model="item.link.opt">
+								<option v-for="(item2,index2) in questions.contents[item.link.que].options">{{item2.option}}</option>
+							</select>
+							关联。
+						</span><br>
+					</span><br>
+				</div><br>
+			</div>
+			<div style="height:15px"></div>
+			<div id="div_debug">
+				<button @click="Debug">debug</button><button @click="SaveFile">保存问卷</button> <br>
+				<input id="fileReader1" type="file" style="width: 100%;" @change="ReadFile('main')"></input>
+				<span v-for="(item,index) in questions.contents">第{{index}}道题，{{item}}<br><br></span>
+			</div>
+
+		</div>
+		<script>
+			questionsSample.contents.push(DeepClone(singleEmpty))
+			questionsSample.contents.push(DeepClone(multiEmpty))
+			questionsSample.contents.push(DeepClone(fillEmpty))
+			questionsSample.contents.push(DeepClone(state))
+			var vue = new Vue({
+				el: "#app",
+				data: {
+					questions: questionsSample,
+					debug: "debugxxx"
+				},
+				created(){
+					let date=new Date()
+					this.questions.basic.date=date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+				},
+				methods: {
+					Debug() {
+						console.log(this.questions);
+					},
+					AddQue(index, type) {
+						// console.log(dic);
+						let newItem=this.GetNewQue(type)
+						this.questions.contents.splice(index + 1, 0, newItem)
+					},
+					ChangeQue(index, type) {
+						let newItem=this.GetNewQue(type)
+						this.questions.contents.splice(index, 1, newItem)
+					},
+					DelQue(index) {
+						console.log(index)
+						if (this.questions.contents.length > 1) {
+							this.questions.contents.splice(index, 1)
+						}
+					},
+					GetNewQue(type) {
+						let newItem = {}
+						switch (type) {
+							case "单选题":
+								newItem = DeepClone(singleEmpty);
+								break;
+							case "多选题":
+								newItem = DeepClone(multiEmpty);
+								break;
+							case "简答题":
+								newItem = DeepClone(fillEmpty);
+								break;
+							case "说明":
+								newItem = DeepClone(state);
+								break;
+						}
+						return newItem
+					},
+					AddOpt(index, index1) {
+						let newItem ={
+							"option": "",
+							"blank": false
+						}
+						this.questions.contents[index].options.splice(index1+1, 0, newItem)
+					},
+					DelOpt(index, index1) {
+						if (this.questions.contents[index].options.length > 1) {
+							this.questions.contents[index].options.splice(index1, 1)
+						}
+					},
+					CopyThis(index){
+						let preItem=DeepClone(this.questions.contents[index])
+						this.questions.contents.splice(index+1,0,preItem)
+					},
+					Debug() {
+						console.log("singleEmpty:", singleEmpty);
+						singleEmpty="singleEmpty被修改"
+					},
+					ReadFile(){
+						let that = this
+						let selectedFile = document.getElementById("fileReader1").files[0]; //获取读取的File对象
+						let reader = new FileReader(); //这里是核心！！！读取操作就是由它完成的。
+						reader.readAsText(selectedFile); //读取文件的内容
+						reader.onload = function() {
+							//当读取完成之后会回调这个函数，然后此时文件的内容存储到了result中。直接操作即可。
+							that.questions = JSON.parse(this.result)
+							// that.patient = that.patient
+						};
+						
+					},
+					SaveFile() {
+						let fileName = this.questions.basic.name+"_"+this.questions.basic.author+"_"+this.questions.basic.date
+						let contents = JSON.stringify(this.questions);
+						let blob = new Blob([contents], {
+							type: "text/plain;charset=utf-8"
+						});
+						saveAs(blob, "question_" + fileName + ".json");
+					
+					},
+				}
+			})
+		</script>
+	</body>
+</html>
